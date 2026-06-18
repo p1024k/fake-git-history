@@ -14,7 +14,6 @@ const {
 } = require("date-fns");
 const chalk = require("chalk");
 const ora = require("ora");
-const boxen = require("boxen");
 // Import visualization function
 const generateActivityVisualization = require("./visualization");
 const { renderText, validateText } = require("./font");
@@ -136,23 +135,6 @@ module.exports = function({
         preview: false,
         modeLabel
       })
-    );
-
-    console.log(
-      boxen(
-        `${chalk.yellow.bold(
-          "If you rely on this tool, please consider buying me a cup of coffee, "
-        )}\n` +
-          `${chalk.yellow.bold("I would appreciate it!")}\n\n` +
-          `${chalk.blueBright.bold("https://www.buymeacoffee.com/artiebits")}`,
-        {
-          borderColor: "yellow",
-          padding: 1,
-          align: "center",
-          borderStyle: "double",
-          margin: 1
-        }
-      )
     );
   })();
 };
