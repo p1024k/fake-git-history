@@ -30,7 +30,9 @@ module.exports = function({
   preview,
   text,
   draw,
-  year
+  year,
+  userName,
+  userEmail
 }) {
   let commitDateList;
   let startDateObj;
@@ -67,6 +69,12 @@ module.exports = function({
     return;
   }
 
+  // Git author identity for the generated repo. Both or neither — providing
+  // only one would still leave commits unable to be authored.
+  if ((userName && !userEmail) || (userEmail && !userName)) {
+    throw new Error("Provide both --user-name and --user-email, or neither.");
+  }
+
   (async function() {
     const spinner = ora("Generating your GitHub activity\n").start();
 
@@ -85,6 +93,13 @@ module.exports = function({
     await execAsync(`mkdir ${historyFolder}`);
     process.chdir(historyFolder);
     await execAsync(`git init`);
+
+    // Set git author identity locally (my-history/ only) when provided, so the
+    // user's global git config is never touched.
+    if (userName && userEmail) {
+      await execAsync(`git config --local user.name "${userName}"`);
+      await execAsync(`git config --local user.email "${userEmail}"`);
+    }
 
     // Create commits.
     for (const date of commitDateList) {

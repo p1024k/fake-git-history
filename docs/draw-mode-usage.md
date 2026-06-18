@@ -27,11 +27,11 @@ fake-git-history <参数>
 ```
 
 > **关键前置（决定提交能不能算进你的 GitHub 贡献）**
-> 先把本地 git 身份设成你 GitHub 账号绑定的邮箱和名字，否则 GitHub 不认这些提交：
+> 提交作者邮箱必须绑定你的 GitHub 账号。用 `--user-name` / `--user-email` 传入，工具只写进 `my-history/` 的**本地**配置（`git config --local`），**不碰你的全局 git 配置**（不会污染其它仓库）：
 > ```bash
-> git config --global user.name  "你的名字"
-> git config --global user.email "你GitHub账号绑定的邮箱"
+> node src/cli.js --text "HI" --year 2025 --user-name "你的名字" --user-email "你GitHub账号绑定的邮箱"
 > ```
+> 两个参数要么都给、要么都不给；不给时沿用系统已有的 git 身份。
 
 ---
 
@@ -51,7 +51,7 @@ node src/cli.js --preview --text "HI" --year 2025
 ### 第二步：确认无误后，真正生成提交
 
 ```bash
-node src/cli.js --text "HI" --year 2025
+node src/cli.js --text "HI" --year 2025 --user-name "你的名字" --user-email "you@github-email.com"
 ```
 
 这一步会在**当前目录创建/覆盖 `my-history/` 文件夹**，里面是一个带倒填日期提交的 git 仓库。
@@ -83,6 +83,8 @@ git push -u origin main
 | `--year` | `-y` | 数字 | 上一年 | 目标年份，范围 `2000` ~ `当前年-1` |
 | `--preview` | `-p` | 布尔 | `false` | 只预览、不生成提交 |
 | `--commitsPerDay` | `-c` | 字符串 | `"0,4"` | 控制每个「点亮天」的提交数（取上界） |
+| `--user-name` | — | 字符串 | — | git 作者名（只写进 my-history/ 本地配置，不污染全局） |
+| `--user-email` | — | 字符串 | — | git 作者邮箱（用 GitHub 账号绑定的） |
 
 **规则：**
 - `--text` 和 `--draw` **二选一**，不能同时给。
@@ -167,8 +169,8 @@ node src/cli.js --preview --text "2025" --year 2024
 node src/cli.js --preview --draw star  --year 2023
 node src/cli.js --preview --text "GIT"  -c "0,9"       # 更密的提交
 
-# —— 生成（创建并填充 my-history/）——
-node src/cli.js --text "HI" --year 2025
+# —— 生成（创建并填充 my-history/；--user-name/--user-email 设本地身份）——
+node src/cli.js --text "HI" --year 2025 --user-name "你的名字" --user-email "you@github-email.com"
 
 # —— 推送到 GitHub ——
 cd my-history

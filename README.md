@@ -26,9 +26,9 @@ Done! Now take a look at your GitHub profile 😉
 
 Instead of random activity, render a short string of **text** or a built-in **icon** onto a past year's contribution graph.
 
-> For commits to count toward your GitHub contributions, make sure your local Git identity uses an email attached to your GitHub account:
+> For commits to count toward your GitHub contributions, the git author email must be one attached to your GitHub account. Pass it per run with `--user-name` / `--user-email` — the tool sets it **locally in `my-history/` only** and never touches your global git config:
 > ```shell script
-> git config --global user.email "your-github-account@email.com"
+> npx fake-git-history --text "HI" --year 2025 --user-name "Your Name" --user-email "your-github-account@email.com"
 > ```
 
 ### Preview first
@@ -60,6 +60,8 @@ Creates/overwrites a `my-history/` folder with a git repo full of backdated comm
 | `--year` | `-y` | number | last year | Target year, `2000` to `currentYear-1` |
 | `--preview` | `-p` | boolean | `false` | Preview without committing |
 | `--commitsPerDay` | `-c` | string | `"0,4"` | Commits per lit day (upper bound) |
+| `--user-name` | — | string | — | Git author name (set locally in `my-history/`, works in any mode) |
+| `--user-email` | — | string | — | Git author email (use one tied to your GitHub account) |
 
 Rules:
 

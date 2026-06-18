@@ -22,6 +22,8 @@ const cli = meow(
       --text, -t      Text to render (A-Z, 0-9, space). Auto-uppercased.
       --draw          Icon to render: cat, heart, mouse, smiley, star.
       --year, -y      Target calendar year (default: last year). 2000..last year.
+      --user-name     Git author name (set locally in my-history/, not global).
+      --user-email    Git author email (use one tied to your GitHub account).
 
     Examples
       $ fake-git-history --commitsPerDay "0,3"
@@ -71,6 +73,12 @@ const cli = meow(
       year: {
         type: "number",
         shortFlag: "y"
+      },
+      userName: {
+        type: "string"
+      },
+      userEmail: {
+        type: "string"
       }
     }
   }
