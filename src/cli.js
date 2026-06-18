@@ -18,7 +18,10 @@ const cli = meow(
                          - workHours: More commits during work hours (9am-5pm) and on weekdays
                          - afterWork: More commits during evenings and weekends
       --preview, -p Preview the activity graph.
-      
+      --text, -t      Text to render (A-Z, 0-9, space). Auto-uppercased.
+      --draw          Icon to render: cat, heart, mouse, smiley, star.
+      --year, -y      Target calendar year (default: last year). 2000..last year.
+
     Examples
       $ fake-git-history --commitsPerDay "0,3"
       $ fake-git-history --frequency 80
@@ -55,6 +58,17 @@ const cli = meow(
         type: "boolean",
         alias: "p",
         default: false
+      },
+      text: {
+        type: "string",
+        alias: "t"
+      },
+      draw: {
+        type: "string"
+      },
+      year: {
+        type: "number",
+        alias: "y"
       }
     }
   }
