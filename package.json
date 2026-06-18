@@ -4,6 +4,9 @@
   "description": "A command-line tool to generate your GitHub activity graph.",
   "bin": "src/cli.js",
   "main": "src/cli.js",
+  "engines": {
+    "node": ">=18"
+  },
   "files": [
     "src/cli.js",
     "src/index.js"
@@ -13,7 +16,8 @@
   "private": false,
   "scripts": {
     "start": "node src/cli.js",
-    "lint": "prettier --write 'src/**/*.js'"
+    "lint": "prettier --write 'src/**/*.js'",
+    "test": "node --test src"
   },
   "husky": {
     "hooks": {
