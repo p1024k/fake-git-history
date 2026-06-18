@@ -22,6 +22,82 @@ A command-line tool that generates GitHub or GitLab activity graphs to make it l
 
 Done! Now take a look at your GitHub profile 😉
 
+## Draw Mode (Text & Icons)
+
+Instead of random activity, render a short string of **text** or a built-in **icon** onto a past year's contribution graph.
+
+> For commits to count toward your GitHub contributions, make sure your local Git identity uses an email attached to your GitHub account:
+> ```shell script
+> git config --global user.email "your-github-account@email.com"
+> ```
+
+### Preview first
+
+```shell script
+npx fake-git-history --preview --text "HI" --year 2025
+```
+
+Prints that year's graph (~53 columns × 7 rows) with the letters shown as dark-green squares, centered. No commits are created.
+
+> The preview uses color to tell lit (green) cells from empty (near-white) cells. If you pipe the output to a file or view it in a non-color terminal, all cells look the same — that's expected.
+
+### Generate
+
+```shell script
+npx fake-git-history --text "HI" --year 2025
+```
+
+Creates/overwrites a `my-history/` folder with a git repo full of backdated commits, then push it as described in [How To Use](#how-to-use).
+
+> ⚠️ It runs `rm -rf my-history` first if the folder already exists — don't run it somewhere that matters.
+
+### Flags
+
+| Flag | Short | Type | Default | Description |
+|---|---|---|---|---|
+| `--text` | `-t` | string | — | Text to render (auto-uppercased) |
+| `--draw` | — | string | — | Icon name: `cat`, `heart`, `mouse`, `smiley`, `star` |
+| `--year` | `-y` | number | last year | Target year, `2000` to `currentYear-1` |
+| `--preview` | `-p` | boolean | `false` | Preview without committing |
+| `--commitsPerDay` | `-c` | string | `"0,4"` | Commits per lit day (upper bound) |
+
+Rules:
+
+- `--text` and `--draw` are mutually exclusive.
+- In draw mode, `--frequency` and `--distribution` are ignored, and `--startDate` / `--endDate` are overridden by the target year.
+- Without `--text` / `--draw`, the original random behavior runs unchanged.
+
+### Text mode
+
+- Font: 5×5 bitmap, supports **`A–Z`, `0–9`, space**. Input is auto-uppercased.
+- Unsupported characters (punctuation, non-ASCII) are skipped with a warning.
+- **Max 8 characters** (spaces count). A year has ~53 columns; each character takes ~6.
+- Letters land on the Mon–Fri rows (vertically centered) and are horizontally centered.
+
+```shell script
+npx fake-git-history --preview --text "CAT"        # OK
+npx fake-git-history --preview --text "GIT HUB"    # 7 chars (incl. space), OK
+npx fake-git-history --preview --text "I LOVE GIT" # 10 chars -> error
+```
+
+### Icon mode
+
+```shell script
+npx fake-git-history --preview --draw heart --year 2025
+```
+
+Available icons: `cat`, `heart`, `mouse`, `smiley`, `star`. An unknown name lists the available ones.
+
+### Commit density
+
+`--commitsPerDay` (default `"0,4"`) controls how many commits each lit day gets (the upper bound). Raising it (e.g. `-c "0,9"`) makes lit days darker and raises the total count, but the pattern is binary (lit/unlit) and its shape doesn't change. The upper bound must be ≥ 1.
+
+### Notes
+
+- The font is 5×5; a few letters (e.g. `M`, `W`) look blocky. Uppercase letters and digits only.
+- The default target year is **last year** (a complete, safe year to render).
+- **Preview matches GitHub**: both anchor weeks to Sunday, so what you see in the preview is what shows up on your profile.
+
 ## Support This Project
 
 If you rely on this tool and find it useful, please consider supporting it. Maintaining an open source project takes time, and a cup of coffee would be greatly appreciated!
