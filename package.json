@@ -17,7 +17,7 @@
   "scripts": {
     "start": "node src/cli.js",
     "lint": "prettier --write 'src/**/*.js'",
-    "test": "node --test src"
+    "test": "node --test"
   },
   "husky": {
     "hooks": {
