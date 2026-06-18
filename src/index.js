@@ -17,6 +17,9 @@ const ora = require("ora");
 const boxen = require("boxen");
 // Import visualization function
 const generateActivityVisualization = require("./visualization");
+const { renderText, validateText } = require("./font");
+const { ICONS, availableIcons } = require("./icons");
+const { patternToCommitDates, yearColumns, yearBounds } = require("./draw");
 
 module.exports = function({
   commitsPerDay,
@@ -24,24 +27,42 @@ module.exports = function({
   startDate,
   endDate,
   distribution,
-  preview
+  preview,
+  text,
+  draw,
+  year
 }) {
-  // Parse dates once to avoid inconsistencies
-  const startDateObj = startDate ? parse(startDate) : addYears(new Date(), -1);
-  const endDateObj = endDate ? parse(endDate) : new Date();
+  let commitDateList;
+  let startDateObj;
+  let endDateObj;
+  let modeLabel;
 
-  const commitDateList = createCommitDateList({
-    commitsPerDay: commitsPerDay.split(","),
-    frequency,
-    startDate: startDateObj,
-    endDate: endDateObj,
-    distribution: distribution || "uniform"
-  });
+  if (text || draw) {
+    const r = prepareDrawMode({ text, draw, year, commitsPerDay });
+    commitDateList = r.commitDateList;
+    startDateObj = r.startDate;
+    endDateObj = r.endDate;
+    modeLabel = r.modeLabel;
+  } else {
+    startDateObj = startDate ? parse(startDate) : addYears(new Date(), -1);
+    endDateObj = endDate ? parse(endDate) : new Date();
+    commitDateList = createCommitDateList({
+      commitsPerDay: commitsPerDay.split(","),
+      frequency,
+      startDate: startDateObj,
+      endDate: endDateObj,
+      distribution: distribution || "uniform"
+    });
+    modeLabel = distribution || "uniform";
+  }
 
   // If preview mode is enabled, just show the visualization and exit
   if (preview) {
     console.log(
-      generateActivityVisualization(commitDateList, startDateObj, endDateObj)
+      generateActivityVisualization(commitDateList, startDateObj, endDateObj, {
+        preview: true,
+        modeLabel
+      })
     );
     return;
   }
@@ -85,7 +106,10 @@ module.exports = function({
     // Show visualization of the created commits
     console.log(chalk.bold("\nActivity Graph:\n"));
     console.log(
-      generateActivityVisualization(commitDateList, startDateObj, endDateObj)
+      generateActivityVisualization(commitDateList, startDateObj, endDateObj, {
+        preview: false,
+        modeLabel
+      })
     );
 
     console.log(
@@ -106,6 +130,58 @@ module.exports = function({
     );
   })();
 };
+
+module.exports.prepareDrawMode = prepareDrawMode;
+
+function prepareDrawMode({ text, draw, year, commitsPerDay }) {
+  const currentYear = new Date().getFullYear();
+  if (text && draw) {
+    throw new Error("Flags --text and --draw are mutually exclusive. Use one.");
+  }
+  if (year === undefined || year === null) year = currentYear - 1;
+  if (!Number.isInteger(year) || year < 2000 || year >= currentYear) {
+    throw new Error(
+      `Invalid year ${year}. Must satisfy 2000 <= year < ${currentYear}.`
+    );
+  }
+  const maxCommits = Number(
+    String(commitsPerDay)
+      .split(",")
+      .pop()
+  );
+  if (!(maxCommits >= 1)) {
+    throw new Error(
+      `--commitsPerDay upper bound must be >= 1 for draw mode (got ${maxCommits}).`
+    );
+  }
+
+  const { jan1, dec31 } = yearBounds(year);
+  const cols = yearColumns(year);
+
+  let grid;
+  let modeLabel;
+  if (text) {
+    validateText(text, cols); // throws on too-long / too-wide
+    grid = renderText(text);
+    modeLabel = `text: ${String(text).toUpperCase()}`;
+  } else {
+    if (!ICONS[draw]) {
+      throw new Error(
+        `Unknown icon "${draw}". Available: ${availableIcons().join(", ")}.`
+      );
+    }
+    grid = ICONS[draw];
+    modeLabel = `icon: ${draw}`;
+  }
+
+  const hasOnPixel = grid.some(row => row.some(v => v));
+  if (!hasOnPixel) {
+    throw new Error("Nothing to render: the text produced no drawable pixels.");
+  }
+
+  const commitDateList = patternToCommitDates(grid, year, maxCommits);
+  return { commitDateList, startDate: jan1, endDate: dec31, modeLabel };
+}
 
 function getRandomIntInclusive(min, max) {
   min = Math.ceil(min);
