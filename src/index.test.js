@@ -1,7 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert");
 const fgh = require("./index");
-const { prepareDrawMode } = fgh;
+const { prepareDrawMode, runStep } = fgh;
 
 test("rejects --text and --draw together", () => {
   assert.throws(
@@ -56,4 +56,26 @@ test("valid icon returns the icon label", () => {
 test("default year is last year", () => {
   const r = prepareDrawMode({ text: "HI", commitsPerDay: "0,4" });
   assert.equal(r.startDate.getFullYear(), new Date().getFullYear() - 1);
+});
+
+test("runStep retries and succeeds on transient failures", async () => {
+  let calls = 0;
+  const flaky = async () => {
+    calls++;
+    if (calls < 3) throw Object.assign(new Error("boom"), { stderr: "boom" });
+    return "ok";
+  };
+  const res = await runStep("git commit", flaky, 3);
+  assert.equal(res, "ok");
+  assert.equal(calls, 3);
+});
+
+test("runStep throws a clear error after exhausting retries", async () => {
+  const alwaysFail = async () => {
+    throw Object.assign(new Error("nope"), { stderr: "nope" });
+  };
+  await assert.rejects(
+    () => runStep("git commit", alwaysFail, 2),
+    /after 2 attempts/
+  );
 });

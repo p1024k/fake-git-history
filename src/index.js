@@ -101,19 +101,30 @@ module.exports = function({
       await execAsync(`git config --local user.email "${userEmail}"`);
     }
 
-    // Create commits.
-    for (const date of commitDateList) {
-      // Change spinner so user can get the progress right now.
-      const dateFormatted = new Intl.DateTimeFormat("en", {
-        day: "numeric",
-        month: "long",
-        year: "numeric"
-      }).format(date);
-      spinner.text = `Generating your Github activity... (${dateFormatted})\n`;
+    // Create commits. runStep retries transient git failures (e.g. a momentarily
+    // unreadable object during rapid commits) so the run recovers. --allow-empty
+    // guarantees a commit even if the index stat-cache missed a same-second,
+    // same-size foo.txt change.
+    try {
+      for (const date of commitDateList) {
+        const dateFormatted = new Intl.DateTimeFormat("en", {
+          day: "numeric",
+          month: "long",
+          year: "numeric"
+        }).format(date);
+        spinner.text = `Generating your Github activity... (${dateFormatted})\n`;
 
-      await execAsync(`echo "${date}" > foo.txt`);
-      await execAsync(`git add .`);
-      await execAsync(`git commit --quiet --date "${date}" -m "fake commit"`);
+        await runStep(`echo "${date}" > foo.txt`);
+        await runStep(`git add -A`);
+        await runStep(
+          `git commit --quiet --allow-empty --date "${date}" -m "fake commit"`
+        );
+      }
+    } catch (err) {
+      spinner.fail();
+      console.error(`\nFailed to generate history: ${err.message}`);
+      process.exitCode = 1;
+      return;
     }
 
     spinner.succeed();
@@ -147,6 +158,28 @@ module.exports = function({
 };
 
 module.exports.prepareDrawMode = prepareDrawMode;
+module.exports.runStep = runStep;
+
+// Run a shell command, retrying transient failures (default 3 attempts with
+// linear backoff). execFn is injectable for testing.
+async function runStep(cmd, execFn, retries = 3) {
+  const exec = execFn || execAsync;
+  let lastErr;
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      return await exec(cmd);
+    } catch (err) {
+      lastErr = err;
+      if (attempt < retries) {
+        await new Promise(resolve => setTimeout(resolve, 150 * attempt));
+      }
+    }
+  }
+  const detail = (lastErr && (lastErr.stderr || lastErr.message)) || "";
+  throw new Error(
+    `Command failed after ${retries} attempts: ${cmd}\n${detail}`.trim()
+  );
+}
 
 function prepareDrawMode({ text, draw, year, commitsPerDay }) {
   const currentYear = new Date().getFullYear();
