@@ -100,12 +100,6 @@ Available icons: `cat`, `heart`, `mouse`, `smiley`, `star`. An unknown name list
 - The default target year is **last year** (a complete, safe year to render).
 - **Preview matches GitHub**: both anchor weeks to Sunday, so what you see in the preview is what shows up on your profile.
 
-## Support This Project
-
-If you rely on this tool and find it useful, please consider supporting it. Maintaining an open source project takes time, and a cup of coffee would be greatly appreciated!
-
-<a href="https://www.buymeacoffee.com/artiebits" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
-
 ## Customizations
 
 ### `--preview`
