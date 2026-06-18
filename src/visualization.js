@@ -62,6 +62,7 @@ function generateActivityVisualization(
   { preview = false, modeLabel } = {}
 ) {
   const end = midnight(endDate);
+  const start = midnight(startDate);
   const { grid, totalWeeks, firstSunday, maxCommitsInDay } = buildWeekGrid(
     commitDateList,
     startDate,
@@ -118,7 +119,7 @@ function generateActivityVisualization(
         firstSunday.getMonth(),
         firstSunday.getDate() + (week * 7 + dayOfWeek)
       );
-      if (cellDate > end) {
+      if (cellDate > end || cellDate < start) {
         row += "  "; // outside the date range
       } else {
         row += intensityBlocks[grid[dayOfWeek][week]] + " ";
