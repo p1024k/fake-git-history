@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
-const meow = require("meow");
+const { pathToFileURL } = require("url");
+const meow = require("meow").default || require("meow");
 const fgh = require("./index");
 
 const cli = meow(
@@ -30,45 +31,46 @@ const cli = meow(
       $ fake-git-history --preview
 `,
   {
+    importMeta: { url: pathToFileURL(__filename).href },
     flags: {
       startDate: {
         type: "string",
-        alias: "s"
+        shortFlag: "s"
       },
       endDate: {
         type: "string",
-        alias: "e"
+        shortFlag: "e"
       },
       commitsPerDay: {
         type: "string",
-        alias: "c",
+        shortFlag: "c",
         default: "0,4"
       },
       frequency: {
         type: "number",
-        alias: "f",
+        shortFlag: "f",
         default: 80
       },
       distribution: {
         type: "string",
-        alias: "d",
+        shortFlag: "d",
         default: "uniform"
       },
       preview: {
         type: "boolean",
-        alias: "p",
+        shortFlag: "p",
         default: false
       },
       text: {
         type: "string",
-        alias: "t"
+        shortFlag: "t"
       },
       draw: {
         type: "string"
       },
       year: {
         type: "number",
-        alias: "y"
+        shortFlag: "y"
       }
     }
   }
